@@ -1,0 +1,157 @@
+/*********************************************************************************************************************
+ *                                                      COMECA
+ ********************************************************************************************************************/
+/**
+ *********************************************************************************************************************
+ *  \author		tedie.cedric
+ *  \date		23 nov. 2018
+ *  \addtogroup	TODO
+ *  \{
+ ********************************************************************************************************************/
+/**
+ *********************************************************************************************************************
+ *  \file		main.c
+ *  
+ *  \brief		TODO
+ *
+ *  \details	
+ *
+ ********************************************************************************************************************/
+
+/* Includes --------------------------------------------------------------------------------------------------------*/
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "DSP28x_Project.h"
+
+#include "main.h"
+
+/* Macro definition ------------------------------------------------------------------------------------------------*/
+#define GPIO_OUTPUT     1
+#define GPIO_INPUT      0
+
+#define RUN_LED_DIR        GpioCtrlRegs.GPCDIR.bit.GPIO79
+#define RUN_LED_DATA       GpioDataRegs.GPCDAT.bit.GPIO79
+#define RUN_LED_ON()        (RUN_LED_DATA = 1)
+#define RUN_LED_OFF()        (RUN_LED_DATA = 0)
+
+#define FAULT_LED_DIR        GpioCtrlRegs.GPCDIR.bit.GPIO78
+#define FAULT_LED_DATA       GpioDataRegs.GPCDAT.bit.GPIO78
+#define FAULT_LED_ON()      (FAULT_LED_DATA = 1)
+#define FAULT_LED_OFF()     (FAULT_LED_DATA = 0)
+
+#define FORCE_LED_DIR        GpioCtrlRegs.GPCDIR.bit.GPIO77
+#define FORCE_LED_DATA       GpioDataRegs.GPCDAT.bit.GPIO77
+#define FORCE_LED_ON()      (FORCE_LED_DATA = 1)
+#define FORCE_LED_OFF()     (FORCE_LED_DATA = 0)
+
+/* Constant definition ---------------------------------------------------------------------------------------------*/
+/* Type definition  ------------------------------------------------------------------------------------------------*/
+/* Public variables ------------------------------------------------------------------------------------------------*/
+/* Private variables -----------------------------------------------------------------------------------------------*/
+/* Private functions prototypes ------------------------------------------------------------------------------------*/
+/* Private functions -----------------------------------------------------------------------------------------------*/
+static void LED_Config(void);
+
+/* Public functions ------------------------------------------------------------------------------------------------*/
+
+/**
+ *********************************************************
+ * \brief 
+ *
+ * \param [in]  
+ * \param [out]  
+ *
+ * \return
+ *********************************************************/
+static void LED_Config(void)
+{
+    EALLOW;
+    RUN_LED_DIR = GPIO_OUTPUT;
+    FAULT_LED_DIR = GPIO_OUTPUT;
+    FORCE_LED_DIR = GPIO_OUTPUT;
+    EDIS;
+
+    RUN_LED_ON();
+    FORCE_LED_ON();
+    FAULT_LED_ON();
+}
+
+/**
+ *********************************************************
+ * \brief
+ *
+ * \param [in]
+ * \param [out]
+ *
+ * \return
+ *********************************************************/
+void main(void)
+{
+//
+// Step 1. Initialize System Control:
+// PLL, WatchDog, enable Peripheral Clocks
+// This example function is found in the F2837xD_SysCtrl.c file.
+//
+   InitSysCtrl();
+
+//
+// Step 2. Initialize GPIO:
+// This example function is found in the F2837xD_Gpio.c file and
+// illustrates how to set the GPIO to it's default state.
+
+   LED_Config();
+//
+// Step 3. Clear all __interrupts and initialize PIE vector table:
+// Disable CPU __interrupts
+//
+   DINT;
+
+//
+// Initialize PIE control registers to their default state.
+// The default state is all PIE __interrupts disabled and flags
+// are cleared.
+// This function is found in the F2837xD_PieCtrl.c file.
+//
+   InitPieCtrl();
+
+//
+// Disable CPU __interrupts and clear all CPU __interrupt flags:
+//
+   IER = 0x0000;
+   IFR = 0x0000;
+
+//
+// Initialize the PIE vector table with pointers to the shell Interrupt
+// Service Routines (ISR).
+// This will populate the entire table, even if the __interrupt
+// is not used in this example.  This is useful for debug purposes.
+// The shell ISR routines are found in F2837xD_DefaultIsr.c.
+// This function is found in F2837xD_PieVect.c.
+//
+   InitPieVectTable();
+
+   PieCtrlRegs.PIECTRL.bit.ENPIE = 1;   // Enable the PIE block
+   IER = 0x100;                         // Enable CPU INT
+   //InitCpuTimers();
+//   DRV_TIMER_Init(TIMER0, 500000.0, true, callbackTimer, &time);
+
+   EINT;
+   ERTM;
+//
+// Step 4. User specific code:
+//
+
+    while(1)
+    {
+
+        RUN_LED_DATA = 1;
+        DELAY_US(500000);
+        RUN_LED_DATA = 0;
+        DELAY_US(500000);
+
+    }
+
+}
+/** \} */
+/******************************************************** EOF *******************************************************/
