@@ -22,26 +22,28 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "DSP2834x_Device.h"
 #include "DSP28x_Project.h"
 
 #include "main.h"
+#include "FM25H20.h"
 
 /* Macro definition ------------------------------------------------------------------------------------------------*/
 #define GPIO_OUTPUT     1
 #define GPIO_INPUT      0
 
-#define RUN_LED_DIR        GpioCtrlRegs.GPCDIR.bit.GPIO79
-#define RUN_LED_DATA       GpioDataRegs.GPCDAT.bit.GPIO79
+#define RUN_LED_DIR         GpioCtrlRegs.GPCDIR.bit.GPIO79
+#define RUN_LED_DATA        GpioDataRegs.GPCDAT.bit.GPIO79
 #define RUN_LED_ON()        (RUN_LED_DATA = 1)
-#define RUN_LED_OFF()        (RUN_LED_DATA = 0)
+#define RUN_LED_OFF()       (RUN_LED_DATA = 0)
 
-#define FAULT_LED_DIR        GpioCtrlRegs.GPCDIR.bit.GPIO78
-#define FAULT_LED_DATA       GpioDataRegs.GPCDAT.bit.GPIO78
+#define FAULT_LED_DIR       GpioCtrlRegs.GPCDIR.bit.GPIO78
+#define FAULT_LED_DATA      GpioDataRegs.GPCDAT.bit.GPIO78
 #define FAULT_LED_ON()      (FAULT_LED_DATA = 1)
 #define FAULT_LED_OFF()     (FAULT_LED_DATA = 0)
 
-#define FORCE_LED_DIR        GpioCtrlRegs.GPCDIR.bit.GPIO77
-#define FORCE_LED_DATA       GpioDataRegs.GPCDAT.bit.GPIO77
+#define FORCE_LED_DIR       GpioCtrlRegs.GPCDIR.bit.GPIO77
+#define FORCE_LED_DATA      GpioDataRegs.GPCDAT.bit.GPIO77
 #define FORCE_LED_ON()      (FORCE_LED_DATA = 1)
 #define FORCE_LED_OFF()     (FORCE_LED_DATA = 0)
 
@@ -57,12 +59,7 @@ static void LED_Config(void);
 
 /**
  *********************************************************
- * \brief 
- *
- * \param [in]  
- * \param [out]  
- *
- * \return
+ * \brief LED Configuration function
  *********************************************************/
 static void LED_Config(void)
 {
@@ -142,13 +139,15 @@ void main(void)
 // Step 4. User specific code:
 //
 
+   FM25H20_init();
     while(1)
     {
 
-        RUN_LED_DATA = 1;
+        RUN_LED_ON();
         DELAY_US(500000);
-        RUN_LED_DATA = 0;
+        RUN_LED_OFF();
         DELAY_US(500000);
+   FM25H250_statusRead();
 
     }
 
