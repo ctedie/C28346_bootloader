@@ -38,10 +38,13 @@ extern "C"
 
 /* Public Constant definition --------------------------------------------------------------------------------------*/
 /* Public Type definition  -----------------------------------------------------------------------------------------*/
+
 /* Public variables ------------------------------------------------------------------------------------------------*/
 /* Public functions ------------------------------------------------------------------------------------------------*/
 void FM25H20_init(void);
 uint16_t FM25H250_statusRead(void);
+uint16_t FM25H20_memWrite(uint16_t address, const uint16_t *pData, uint32_t size);
+uint16_t FM25H20_memRead(uint16_t address, uint16_t *pData, uint32_t size);
 
 #endif /* INCLUDE_FM25H20_H_ */
 

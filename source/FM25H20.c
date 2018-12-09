@@ -37,14 +37,22 @@
 #define WRITE   0x02              // Write Memory Data 0000 0010b
 #define SLEEP   0xB9              // Enter Sleep Mode 1011 1001b
 
+
+#define CS_HIGH()   GpioDataRegs.GPASET.bit.GPIO19 = 1
+#define CS_LOW()    GpioDataRegs.GPACLEAR.bit.GPIO19 = 1
 /* Constant definition ---------------------------------------------------------------------------------------------*/
 /* Type definition  ------------------------------------------------------------------------------------------------*/
+typedef struct
+{
+    uint32_t address:24;
+    uint32_t data:8;
+}tMemoryData;
+
 /* Public variables ------------------------------------------------------------------------------------------------*/
 /* Private variables -----------------------------------------------------------------------------------------------*/
 /* Private functions prototypes ------------------------------------------------------------------------------------*/
 /* Private functions -----------------------------------------------------------------------------------------------*/
 /* Public functions ------------------------------------------------------------------------------------------------*/
-
 
 /**
  *********************************************************
@@ -57,7 +65,12 @@
  *********************************************************/
 void FM25H20_init(void)
 {
+    //TODO SPI 8 bit
     spi_init();
+    EALLOW;
+    GpioCtrlRegs.GPADIR.bit.GPIO19 = 1;
+    EDIS;
+    CS_HIGH();
 }
 
 /**
@@ -71,9 +84,13 @@ void FM25H20_init(void)
  *********************************************************/
 uint16_t FM25H250_statusRead(void)
 {
-    SpiaRegs.SPIDAT = 0x0500;
+    CS_LOW();
+    SpiaRegs.SPITXBUF = 0x0500;
+    while(SpiaRegs.SPIFFRX.bit.RXFFST !=1) { }
+    CS_HIGH();
     return SpiaRegs.SPIRXBUF;
 }
+
 /**
  *********************************************************
  * \brief
@@ -83,7 +100,21 @@ uint16_t FM25H250_statusRead(void)
  *
  * \return
  *********************************************************/
-void FM25H250_memRead(uint16_t address, uint16_t *buff, uint16_t size)
+uint16_t FM25H20_memWrite(uint16_t address, const uint16_t *pData, uint32_t size)
+{
+
+}
+
+/**
+ *********************************************************
+ * \brief
+ *
+ * \param [in]
+ * \param [out]
+ *
+ * \return
+ *********************************************************/
+uint16_t FM25H20_memRead(uint16_t address, uint16_t *pData, uint32_t size)
 {
 
 }
