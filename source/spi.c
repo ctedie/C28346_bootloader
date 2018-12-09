@@ -55,18 +55,24 @@ int16_t spi_init(void)
     /* set speed */
     SpiaRegs.SPIBRR = (300000000 / ((SysCtrlRegs.LOSPCP.bit.LSPCLK << 1) * 1000000)) - 1;
 
-    SpiaRegs.SPICCR.bit.SPICHAR = 15; //8 bits
+    SpiaRegs.SPICCR.bit.SPICHAR = 15; //16 bits
 
     SpiaRegs.SPICTL.bit.MASTER_SLAVE = 1; //Master
 
     /* SPI Mode 0 */
-    SpiaRegs.SPICCR.bit.CLKPOLARITY = 0;
+    SpiaRegs.SPICCR.bit.CLKPOLARITY = 1;
     SpiaRegs.SPICTL.bit.CLK_PHASE = 0;
 
     SpiaRegs.SPICTL.bit.TALK = 1;
 
     /* Release from reset */
     SpiaRegs.SPICCR.bit.SPISWRESET = 1;
+
+
+    /* TODO */
+    SpiaRegs.SPIFFTX.all=0xE040;
+    SpiaRegs.SPIFFRX.all=0x204f;
+    SpiaRegs.SPIFFCT.all=0x0;
 
     return 0;
 }
@@ -82,7 +88,7 @@ int16_t spi_init(void)
  *********************************************************/
 int16_t spi_write(uint16_t val)
 {
-    SpiaRegs.SPIDAT = val;
+    SpiaRegs.SPITXBUF = val;
     return 0;
 }
 
