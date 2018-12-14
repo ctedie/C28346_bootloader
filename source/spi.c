@@ -55,7 +55,7 @@ int16_t spi_init(void)
     /* set speed */
     SpiaRegs.SPIBRR = (300000000 / ((SysCtrlRegs.LOSPCP.bit.LSPCLK << 1) * 1000000)) - 1;
 
-    SpiaRegs.SPICCR.bit.SPICHAR = 15; //16 bits
+    SpiaRegs.SPICCR.bit.SPICHAR = 7; //16 bits
 
     SpiaRegs.SPICTL.bit.MASTER_SLAVE = 1; //Master
 
@@ -115,8 +115,19 @@ void spi_read(void)
  *
  * \return
  *********************************************************/
-void spi_readwrite(void)
+void spi_readwrite(const uint16_t *pDataTx, uint16_t *pDataRx, uint32_t size)
 {
+    uint32_t index;
+
+    for (index = 0; index < size; ++index)
+    {
+        SpiaRegs.SPITXBUF = (*pDataTx) & 0xFF;
+        while(SpiaRegs.SPIFFRX.bit.RXFFST !=1) { }
+        *(pDataRx) = (SpiaRegs.SPIRXBUF & 0xFF);
+        pDataTx++;
+        pDataRx++;
+    }
+
 }
 
 

@@ -84,11 +84,13 @@ void FM25H20_init(void)
  *********************************************************/
 uint16_t FM25H250_statusRead(void)
 {
+    uint16_t tx[] = {RDSR, 0};
+    uint16_t status[2];
     CS_LOW();
-    SpiaRegs.SPITXBUF = 0x0500;
-    while(SpiaRegs.SPIFFRX.bit.RXFFST !=1) { }
+    spi_readwrite(tx, status, 2);
     CS_HIGH();
-    return SpiaRegs.SPIRXBUF;
+
+    return status[1];
 }
 
 /**
