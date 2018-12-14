@@ -121,7 +121,7 @@ SECTIONS
    .pinit           : > RAML0,     PAGE = 0
    .switch          : > RAML0,     PAGE = 0
 
-   .stack           : > RAMM1,     PAGE = 1
+   .stack           : > RAML4,     PAGE = 1
    .ebss            : > RAML2,     PAGE = 1
    .econst          : > RAML3,     PAGE = 1
    .esysmem         : > RAMM1,     PAGE = 1

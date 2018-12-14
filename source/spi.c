@@ -86,9 +86,18 @@ int16_t spi_init(void)
  *
  * \return
  *********************************************************/
-int16_t spi_write(uint16_t val)
+int16_t spi_write(const uint16_t *pDataTx, uint32_t size)
 {
-    SpiaRegs.SPITXBUF = val;
+    uint32_t index;
+    uint16_t dummy;
+    for (index = 0; index < size; ++index)
+    {
+        SpiaRegs.SPITXBUF = ((*pDataTx) & 0xFF)<<8;
+        while(SpiaRegs.SPIFFRX.bit.RXFFST !=1) { }
+        dummy = (SpiaRegs.SPIRXBUF & 0xFF);
+        pDataTx++;
+    }
+
     return 0;
 }
 
@@ -101,8 +110,17 @@ int16_t spi_write(uint16_t val)
  *
  * \return
  *********************************************************/
-void spi_read(void)
+void spi_read(uint16_t *pDataRx, uint32_t size)
 {
+    uint32_t index;
+    uint16_t dummy = 0xAA;
+    for (index = 0; index < size; ++index)
+    {
+        SpiaRegs.SPITXBUF = (dummy & 0xFF)<<8;
+        while(SpiaRegs.SPIFFRX.bit.RXFFST !=1) { }
+        *(pDataRx) = (SpiaRegs.SPIRXBUF & 0xFF);
+        pDataRx++;
+    }
 
 }
 

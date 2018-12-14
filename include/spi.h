@@ -39,7 +39,8 @@ extern "C"
 /* Public variables ------------------------------------------------------------------------------------------------*/
 /* Public functions ------------------------------------------------------------------------------------------------*/
 int16_t spi_init(void);
-int16_t spi_write(uint16_t val);
+int16_t spi_write(const uint16_t *pDataTx, uint32_t size);
+void spi_read(uint16_t *pDataRx, uint32_t size);
 void spi_readwrite(const uint16_t *pDataTx, uint16_t *pDataRx, uint32_t size);
 
 #endif /* INCLUDE_SPI_H_ */

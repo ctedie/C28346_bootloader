@@ -21,6 +21,7 @@
 /* Includes --------------------------------------------------------------------------------------------------------*/
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #include "DSP2834x_Device.h"
 #include "DSP28x_Project.h"
@@ -76,6 +77,8 @@ static void LED_Config(void)
     FAULT_LED_ON();
 }
 
+static uint16_t m_testDataTX[6] = {1, 2, 3, 4, 5, 6};
+static uint16_t m_testDataRX[6];
 /**
  *********************************************************
  * \brief
@@ -149,8 +152,9 @@ void main(void)
         DELAY_US(500000);
         RUN_LED_OFF();
         DELAY_US(500000);
-        m_data = FM25H250_statusRead();
-
+        //m_data = FM25H250_statusRead();
+        FM25H20_memWrite(0,  m_testDataTX,  6);
+        FM25H20_memRead(0,  m_testDataRX,  6);
     }
 
 }

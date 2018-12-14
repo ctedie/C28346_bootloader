@@ -40,6 +40,10 @@
 
 #define CS_HIGH()   GpioDataRegs.GPASET.bit.GPIO19 = 1
 #define CS_LOW()    GpioDataRegs.GPACLEAR.bit.GPIO19 = 1
+
+#define SWAP_32(x)              ( (((x)&0xFF)<<24) | (((x)&0xFF00)<<8) | (((x)&0xFF0000)>>8) | (((x)&0xFF000000)>>24) )
+#define ADDRESS_FORMAT(x)    ( SWAP_32( ((x)&0x0003FFFF)<<14 ) )
+
 /* Constant definition ---------------------------------------------------------------------------------------------*/
 /* Type definition  ------------------------------------------------------------------------------------------------*/
 typedef struct
@@ -102,9 +106,32 @@ uint16_t FM25H250_statusRead(void)
  *
  * \return
  *********************************************************/
-uint16_t FM25H20_memWrite(uint16_t address, const uint16_t *pData, uint32_t size)
+uint16_t FM25H20_memWrite(uint32_t address, const uint16_t *pData, uint32_t size)
 {
+    uint16_t tx = WREN;
+    uint32_t realAddress = ADDRESS_FORMAT(address);
+    uint16_t tab_address[3] = {(realAddress>>16), (realAddress&0xFF00)>>8, (realAddress&0xFF)};
 
+    CS_LOW();
+    /* Write Enable */
+    spi_write(&tx, 1);
+    CS_HIGH();
+
+    CS_LOW();
+
+    /* Write Memory Code */
+    tx = WRITE;
+    spi_write(&tx, 1);
+
+    /* Write address */
+    spi_write(tab_address, 3);
+
+    /* Write data */
+    spi_write(pData, size);
+
+    CS_HIGH();
+
+    return 0;
 }
 
 /**
@@ -116,8 +143,26 @@ uint16_t FM25H20_memWrite(uint16_t address, const uint16_t *pData, uint32_t size
  *
  * \return
  *********************************************************/
-uint16_t FM25H20_memRead(uint16_t address, uint16_t *pData, uint32_t size)
+uint16_t FM25H20_memRead(uint32_t address, uint16_t *pData, uint32_t size)
 {
+    uint16_t tx = READ;
+    uint32_t realAddress = ADDRESS_FORMAT(address);
+    uint16_t tab_address[3] = {(realAddress>>16), (realAddress&0xFF00)>>8, (realAddress&0xFF)};
+
+    CS_LOW();
+    /* Memory read */
+    spi_write(&tx, 1);
+
+
+    /* Write address */
+    spi_write(tab_address, 3);
+
+    /* Write data */
+    spi_read(pData, size);
+
+    CS_HIGH();
+
+    return 0;
 
 }
 
