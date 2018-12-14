@@ -135,8 +135,6 @@ void main(void)
 
    PieCtrlRegs.PIECTRL.bit.ENPIE = 1;   // Enable the PIE block
    IER = 0x100;                         // Enable CPU INT
-   //InitCpuTimers();
-//   DRV_TIMER_Init(TIMER0, 500000.0, true, callbackTimer, &time);
 
    EINT;
    ERTM;
@@ -152,7 +150,7 @@ void main(void)
         DELAY_US(500000);
         RUN_LED_OFF();
         DELAY_US(500000);
-        //m_data = FM25H250_statusRead();
+
         FM25H20_memWrite(0,  m_testDataTX,  6);
         FM25H20_memRead(0,  m_testDataRX,  6);
     }

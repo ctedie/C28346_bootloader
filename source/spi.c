@@ -38,12 +38,7 @@
 
 /**
  *********************************************************
- * \brief 
- *
- * \param [in]  
- * \param [out]  
- *
- * \return
+ * \brief SPI Initialization
  *********************************************************/
 int16_t spi_init(void)
 {
@@ -79,7 +74,7 @@ int16_t spi_init(void)
 
 /**
  *********************************************************
- * \brief
+ * \brief SPI Write function
  *
  * \param [in]
  * \param [out]
@@ -103,7 +98,7 @@ int16_t spi_write(const uint16_t *pDataTx, uint32_t size)
 
 /**
  *********************************************************
- * \brief
+ * \brief   SPI Read function
  *
  * \param [in]
  * \param [out]
@@ -126,7 +121,7 @@ void spi_read(uint16_t *pDataRx, uint32_t size)
 
 /**
  *********************************************************
- * \brief
+ * \brief   SPI Write and Read function
  *
  * \param [in]
  * \param [out]
