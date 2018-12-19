@@ -28,6 +28,7 @@
 
 #include "main.h"
 #include "FM25H20.h"
+#include "sci.h"
 
 /* Macro definition ------------------------------------------------------------------------------------------------*/
 #define GPIO_OUTPUT     1
@@ -90,6 +91,7 @@ static uint16_t m_testDataRX[6];
  *********************************************************/
 void main(void)
 {
+    SciConfig_t sciConfig;
 //
 // Step 1. Initialize System Control:
 // PLL, WatchDog, enable Peripheral Clocks
@@ -143,6 +145,12 @@ void main(void)
 //
 
    FM25H20_init();
+   sciConfig.baudrate = B115200;
+   sciConfig.dataSize = BIT_8;
+   sciConfig.stopBit = STOP_BIT_1;
+   Sci_Init(SCI1, &sciConfig);
+
+
     while(1)
     {
 
@@ -151,8 +159,8 @@ void main(void)
         RUN_LED_OFF();
         DELAY_US(500000);
 
-        FM25H20_memWrite(0,  m_testDataTX,  6);
-        FM25H20_memRead(0,  m_testDataRX,  6);
+//        FM25H20_memWrite(0,  m_testDataTX,  6);
+//        FM25H20_memRead(0,  m_testDataRX,  6);
     }
 
 }
