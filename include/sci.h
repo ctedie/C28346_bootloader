@@ -55,9 +55,9 @@ typedef enum
 
 typedef enum
 {
-    SCI1 = 0,
-    SCI2,
-    SCI3,
+    SCIA = 0,
+    SCIB,
+    SCIC,
 
     NB_SERIAL
 }SciNumber_t;
@@ -108,8 +108,8 @@ typedef struct
 /* Public variables ------------------------------------------------------------------------------------------------*/
 /* Public functions ------------------------------------------------------------------------------------------------*/
 uint16_t Sci_Init(uint16_t sLink, SciConfig_t *pConfig);
-//uint16_t Sci_Read(uint16_t sLink, uint16_t *pBuffer, const uint16_t size);
-//uint16_t Sci_Write(uint16_t sLink, uint16_t *pBuffer, uint16_t size);
+uint16_t Sci_Read(uint16_t sLink, uint16_t *pBuffer, const uint16_t size);
+uint16_t Sci_Write(uint16_t sLink, uint16_t *pBuffer, uint16_t size);
 //SciReturn_t Sci_StartTX(uint16_t sLink);
 
 void sciIntHandler0(void);

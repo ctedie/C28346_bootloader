@@ -87,17 +87,17 @@ static char receivedChar;
 /* Private functions -----------------------------------------------------------------------------------------------*/
 void sciIntHandler0(void)
 {
-    generalIntHandler(SCI1);
+    generalIntHandler(SCIA);
 }
 
 void sciIntHandler1(void)
 {
-    generalIntHandler(SCI2);
+    generalIntHandler(SCIB);
 }
 
 void sciIntHandler2(void)
 {
-    generalIntHandler(SCI3);
+    generalIntHandler(SCIC);
 }
 
 
@@ -305,28 +305,31 @@ SciReturn_t Sci_Init(SciNumber_t sciNb, SciConfig_t *pConfig)
  *
  * \return
  *********************************************************/
-//SciReturn_t sci_Write(uint16_t sLink, uint16_t *pBuffer, const uint16_t size)
-//{
-//    uint16_t ret = SERIAL_LINK_SUCCESS;
-//    uint16_t i;
-//
-//
-//    if(m_sciList[sLink].initOK == false)
-//    {
-//
-//        ret = SERIAL_LINK_NOT_INIT;
-//    }
-//
-//    if(ret == SERIAL_LINK_SUCCESS)
-//    {
-//        for (i = 0; i < size; ++i)
-//        {
-//            //TODO Non blocking
-//        }
-//    }
-//
-//    return ret;
-//}
+SciReturn_t Sci_Write(uint16_t sLink, uint16_t *pBuffer, const uint16_t size)
+{
+    SciReturn_t ret = SCI_SUCCESS;
+    uint16_t i;
+
+
+    if(m_sciList[sLink].initOK == false)
+    {
+
+        ret = SCI_NOT_INIT;
+    }
+
+    if(ret == SCI_SUCCESS)
+    {
+        for (i = 0; i < size; ++i)
+        {
+            //TODO Non blocking
+            m_sciList[sLink].sciReg->SCITXBUF = *pBuffer;
+            while(m_sciList[sLink].sciReg->SCICTL2.bit.TXEMPTY != 1);
+            pBuffer++;
+        }
+    }
+
+    return ret;
+}
 
 /**
  *********************************************************
@@ -337,28 +340,30 @@ SciReturn_t Sci_Init(SciNumber_t sciNb, SciConfig_t *pConfig)
  *
  * \return
  *********************************************************/
-//SciReturn_t sci_Read(uint16_t sLink, uint16_t *pBuffer, const uint16_t size)
-//{
-//    uint16_t ret = SERIAL_LINK_SUCCESS;
-//    uint16_t i;
-//
-//
-//    if(m_sciList[sLink].initOK == false)
-//    {
-//
-//        ret = SERIAL_LINK_NOT_INIT;
-//    }
-//
-//    if(ret == SERIAL_LINK_SUCCESS)
-//    {
-//        for (i = 0; i < size; ++i)
-//        {
-//
-//        }
-//    }
-//
-//    return ret;
-//}
+SciReturn_t Sci_Read(uint16_t sLink, uint16_t *pBuffer, const uint16_t size)
+{
+    SciReturn_t ret = SCI_SUCCESS;
+    uint16_t i;
+
+
+    if(m_sciList[sLink].initOK == false)
+    {
+
+        ret = SCI_NOT_INIT;
+    }
+
+    if(ret == SCI_SUCCESS)
+    {
+        for (i = 0; i < size; ++i)
+        {
+            while(m_sciList[sLink].sciReg->SCIRXST.bit.RXRDY != 1);
+            *pBuffer =  m_sciList[sLink].sciReg->SCIRXBUF.bit.RXDT;
+            pBuffer++;
+        }
+    }
+
+    return ret;
+}
 
 /** \} */
 /******************************************************** EOF *******************************************************/

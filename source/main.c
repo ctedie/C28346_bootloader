@@ -148,7 +148,11 @@ void main(void)
    sciConfig.baudrate = B115200;
    sciConfig.dataSize = BIT_8;
    sciConfig.stopBit = STOP_BIT_1;
-   Sci_Init(SCI1, &sciConfig);
+   sciConfig.parity = PARITY_NONE;
+   if (Sci_Init(SCIA, &sciConfig) != SCI_SUCCESS)
+   {
+       while(1);
+   }
 
 
     while(1)
@@ -158,8 +162,7 @@ void main(void)
         DELAY_US(500000);
         RUN_LED_OFF();
         DELAY_US(500000);
-
-//        FM25H20_memWrite(0,  m_testDataTX,  6);
+        //        FM25H20_memWrite(0,  m_testDataTX,  6);
 //        FM25H20_memRead(0,  m_testDataRX,  6);
     }
 
