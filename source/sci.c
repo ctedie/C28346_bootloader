@@ -182,10 +182,6 @@ static void generalRxIntHandler(uint16_t uartNb)
 
     m_sciList[uartNb].sciReg->SCIFFRX.bit.RXFFOVRCLR = 1;
     m_sciList[uartNb].sciReg->SCIFFRX.bit.RXFFINTCLR = 1;
-
-
-
-
 }
 
 static void disableTxInterrupt(uint32_t uartNb)

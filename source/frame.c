@@ -113,16 +113,16 @@ static bool buildmessage(void *pData, uint16_t *pMsg, uint16_t maxSize);
  *********************************************************/
 uint16_t SerialLinkFrameProtocoleInit(SciNumber_t link,
                                     SciSpeed_t baurate,
-                                    SerialLinkDataSize_t bitSize,
-                                    SerialLinkParity_t parity,
-                                    SerialLinkStopBit_t stopBit,
+                                    SciDataSize_t bitSize,
+                                    SciParity_t parity,
+                                    SciStopBit_t stopBit,
                                     cbNotifyRx_t cbNotifyRx,
                                     void* pDataNotifyRx,
                                     cbAllocMsg_t cbAllocMsg,
                                     cbFreeMsg_t cbFreeMsg
                                     )
 {
-    SerialLinkConfig_t linkConf;
+    SciConfig_t linkConf;
 //  bool channelFound = false;
     uint16_t channelNumber = 0xFF;
     channel_t *pChannel = NULL;
@@ -165,7 +165,7 @@ uint16_t SerialLinkFrameProtocoleInit(SciNumber_t link,
     linkConf.cbTransmission = sendChar;
     linkConf.pTransmitionData = &pChannel->txMsg;
 
-    if(SerialLink_Init(pChannel->linkNumber, &linkConf) != SERIAL_LINK_SUCCESS)
+    if(Sci_Init(pChannel->linkNumber, &linkConf) != SCI_SUCCESS)
     {
         return false;
     }
@@ -198,7 +198,7 @@ void SerialLinkFrameProtocole_Send(uint16_t channel, uint16_t *pMsg, uint16_t si
         pChannel->txMsg.pMsg = pMsg;
         pChannel->txMsg.size = size;
         pChannel->txMsg.cbNextState = SendDLEStart;
-        SerialLink_StartTX(pChannel->linkNumber);
+//        SerialLink_StartTX(pChannel->linkNumber);
     }
 }
 
