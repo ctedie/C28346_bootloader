@@ -68,60 +68,76 @@ sci_t m_sciList[NB_SERIAL] =
 //    INT_UART0, INT_UART1, INT_UART2
 //};
 
+
 typedef void (*pIntFunction)(void);
-static const pIntFunction m_IntFuncTable[] =
-{
-        sciIntHandler0,
-        sciIntHandler1,
-        sciIntHandler2
-};
 
 /* Private functions prototypes ------------------------------------------------------------------------------------*/
-static void generalIntHandler(uint32_t uartNb);
+static void generalTxIntHandler(uint16_t uartNb);
+static void generalRxIntHandler(uint16_t uartNb);
 void testCallback(uint16_t uartNb, void* pArg);
 static void disableTxInterrupt(uint32_t uartNb);
 static void enableTxInterrupt(uint32_t uartNb);
+static void fifoInit(uint16_t sciNb);
+interrupt void sciTxIntHandler0(void);
+interrupt void sciTxIntHandler1(void);
+interrupt void sciTxIntHandler2(void);
+interrupt void sciRxIntHandler0(void);
+interrupt void sciRxIntHandler1(void);
+interrupt void sciRxIntHandler2(void);
+
+static const pIntFunction m_IntTxFuncTable[] =
+{
+        sciTxIntHandler0,
+        sciTxIntHandler1,
+        sciTxIntHandler2
+};
+
+static const pIntFunction m_IntRxFuncTable[] =
+{
+        sciRxIntHandler0,
+        sciRxIntHandler1,
+        sciRxIntHandler2
+};
 
 static char receivedChar;
 
 /* Private functions -----------------------------------------------------------------------------------------------*/
-void sciIntHandler0(void)
+interrupt void sciTxIntHandler0(void)
 {
-    generalIntHandler(SCIA);
+    generalTxIntHandler(SCI_A);
+    PieCtrlRegs.PIEACK.all |= PIEACK_GROUP9;
 }
 
-void sciIntHandler1(void)
+interrupt void sciTxIntHandler1(void)
 {
-    generalIntHandler(SCIB);
+    generalTxIntHandler(SCI_B);
 }
 
-void sciIntHandler2(void)
+interrupt void sciTxIntHandler2(void)
 {
-    generalIntHandler(SCIC);
+    generalTxIntHandler(SCI_C);
+}
+
+interrupt void sciRxIntHandler0(void)
+{
+    generalRxIntHandler((uint16_t)SCI_A);
+    PieCtrlRegs.PIEACK.all |= M_INT9;
+}
+
+void sciRxIntHandler1(void)
+{
+    generalRxIntHandler(SCI_B);
+}
+
+interrupt void sciRxIntHandler2(void)
+{
+    generalRxIntHandler(SCI_C);
 }
 
 
-static void generalIntHandler(uint32_t uartNb)
+static void generalTxIntHandler(uint16_t uartNb)
 {
-//    uint32_t intStatus;
-//    uint16_t car;
-//    uint16_t txCar;
-//
-//    intStatus = UARTIntStatus(m_sciList[uartNb].uartBase, true);
-//    UARTIntClear(m_sciList[uartNb].uartBase, intStatus);
-//
-//    if(intStatus & (UART_INT_RX | UART_INT_RT))
-//    {
-//        if(m_sciList[uartNb].cbReception != NULL)
-//        {
-//            if(UARTCharsAvail(m_sciList[uartNb].uartBase))
-//            {
-//                car = (uint16_t)UARTCharGetNonBlocking(m_sciList[uartNb].uartBase);
-//                m_sciList[uartNb].cbReception(m_sciList[uartNb].pReceptionData, car);
-//            }
-//        }
-//    }
-//    else if(intStatus & UART_INT_TX)
+//    if(intStatus & UART_INT_TX)
 //    {
 //        if(m_sciList[uartNb].cbTransmission != NULL)
 //        {
@@ -147,26 +163,83 @@ static void generalIntHandler(uint32_t uartNb)
 ////      UARTCharGet(m_sciList[uartNb].uartNb);
 //    }
 //
+////TODO clear interrupt
 //
-//
+}
+
+static void generalRxIntHandler(uint16_t uartNb)
+{
+    uint16_t car = 0;
+
+    if(m_sciList[uartNb].sciReg->SCIFFRX.bit.RXFFST > 0)
+    {
+        car = m_sciList[uartNb].sciReg->SCIRXBUF.bit.RXDT;
+        if(m_sciList[uartNb].cbReception != NULL)
+        {
+            m_sciList[uartNb].cbReception(m_sciList[uartNb].pReceptionData, car);
+        }
+    }
+
+    m_sciList[uartNb].sciReg->SCIFFRX.bit.RXFFOVRCLR = 1;
+    m_sciList[uartNb].sciReg->SCIFFRX.bit.RXFFINTCLR = 1;
+
+
+
+
 }
 
 static void disableTxInterrupt(uint32_t uartNb)
 {
-//    m_sciList[uartNb]._intFlags &= ~UART_INT_TX;
-//    UARTIntDisable(m_sciList[uartNb].uartBase, UART_INT_TX);
+    m_sciList[uartNb].sciReg->SCICTL2.bit.TXINTENA = 0;
+
 }
 
 static void enableTxInterrupt(uint32_t uartNb)
 {
-//    m_sciList[uartNb]._intFlags |= UART_INT_TX;
-//    UARTIntEnable(m_sciList[uartNb].uartBase, UART_INT_TX);
+    m_sciList[uartNb].sciReg->SCICTL2.bit.TXINTENA = 1;
 }
 
 static uint16_t cptReceivedChar;
 void testCallback(uint16_t uartNb, void* pArg)
 {
     char* character = pArg;
+
+}
+
+static void fifoInit(uint16_t sciNb)
+{
+
+    sci_t *pSci = &m_sciList[sciNb];
+
+
+    EALLOW;
+    PieVectTable.SCIRXINTA = &sciRxIntHandler0;
+    PieVectTable.SCITXINTA = &sciTxIntHandler0;
+    EDIS;
+    IER |= M_INT9;
+
+    PieCtrlRegs.PIEIER9.bit.INTx1=1;     // PIE Group 9, int1
+    PieCtrlRegs.PIEIER9.bit.INTx2=1;     // PIE Group 9, INT2
+
+
+    pSci->sciReg->SCICTL1.bit.SWRESET = 0;
+
+    pSci->sciReg->SCIFFCT.all = 0;
+
+    pSci->sciReg->SCIFFTX.bit.SCIFFENA = 1;
+    pSci->sciReg->SCIFFTX.bit.TXFIFOXRESET = 0;
+    pSci->sciReg->SCIFFRX.bit.RXFIFORESET = 0;
+
+    pSci->sciReg->SCIFFTX.bit.TXFFIL = 0;
+    pSci->sciReg->SCIFFTX.bit.TXFFIENA = 0;
+    pSci->sciReg->SCIFFTX.bit.SCIRST = 1;
+
+    pSci->sciReg->SCIFFRX.bit.RXFFIL = 1;
+    pSci->sciReg->SCIFFRX.bit.RXFFIENA = 1;
+    pSci->sciReg->SCIFFRX.bit.RXFFINTCLR = 1;
+
+    pSci->sciReg->SCIFFTX.bit.TXFIFOXRESET = 1;
+    pSci->sciReg->SCIFFRX.bit.RXFIFORESET = 1;
 
 }
 
@@ -202,7 +275,7 @@ SciReturn_t Sci_Init(SciNumber_t sciNb, SciConfig_t *pConfig)
 
     pSci = &m_sciList[sciNb];
 
-    pSci->sciReg->SCICTL1.bit.SWRESET = 1;
+
 
     m_sciList[sciNb].cbReception = pConfig->cbReception;
     m_sciList[sciNb].pReceptionData = pConfig->pReceptionData;
@@ -246,8 +319,45 @@ SciReturn_t Sci_Init(SciNumber_t sciNb, SciConfig_t *pConfig)
 //        m_sciList[sciNb]._intFlags = (UART_INT_RX | UART_INT_RT);
 //    }
 
+
+//    fifoInit(sciNb);
+
+    EALLOW;
+    PieVectTable.SCIRXINTA = &sciRxIntHandler0;
+    PieVectTable.SCITXINTA = &sciTxIntHandler0;
+    EDIS;
+    IER |= M_INT9;
+
+    PieCtrlRegs.PIEIER9.bit.INTx1=1;     // PIE Group 9, int1
+    PieCtrlRegs.PIEIER9.bit.INTx2=1;     // PIE Group 9, INT2
+
+
+    pSci->sciReg->SCICTL1.bit.SWRESET = 0;
+
     pSci->sciReg->SCICTL1.bit.RXENA = 1;
     pSci->sciReg->SCICTL1.bit.TXENA = 1;
+    pSci->sciReg->SCICTL2.bit.RXBKINTENA = 1;
+    pSci->sciReg->SCICTL2.bit.TXINTENA = 0;
+
+    pSci->sciReg->SCIFFTX.bit.TXFIFOXRESET = 0;
+    pSci->sciReg->SCIFFTX.bit.SCIFFENA = 1;
+    pSci->sciReg->SCIFFTX.bit.SCIRST = 1;
+    pSci->sciReg->SCIFFTX.bit.TXFFIL = 0;
+    pSci->sciReg->SCIFFTX.bit.TXFFIENA = 0;
+
+    pSci->sciReg->SCIFFRX.bit.RXFIFORESET = 0;
+    pSci->sciReg->SCIFFRX.bit.RXFFIL = 1;
+    pSci->sciReg->SCIFFRX.bit.RXFFIENA = 1;
+
+    pSci->sciReg->SCIFFCT.all = 0;
+
+
+    pSci->sciReg->SCICTL1.bit.SWRESET = 1;
+    pSci->sciReg->SCIFFTX.bit.TXFIFOXRESET = 1;
+    pSci->sciReg->SCIFFTX.bit.TXFFINTCLR = 1;
+    pSci->sciReg->SCIFFRX.bit.RXFIFORESET = 1;
+    pSci->sciReg->SCIFFRX.bit.RXFFINTCLR = 1;
+
 
     m_sciList[sciNb].initOK = true;
 

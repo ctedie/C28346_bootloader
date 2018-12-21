@@ -80,6 +80,13 @@ static void LED_Config(void)
 
 static uint16_t m_testDataTX[6] = {1, 2, 3, 4, 5, 6};
 static uint16_t m_testDataRX[6];
+static void rxcall(void *pData, uint16_t caracter);
+
+static uint16_t m_caracter;
+static void rxcall(void *pData, uint16_t caracter)
+{
+    m_caracter = caracter;
+}
 /**
  *********************************************************
  * \brief
@@ -139,17 +146,19 @@ void main(void)
    IER = 0x100;                         // Enable CPU INT
 
    EINT;
-   ERTM;
+//   ERTM;
 //
 // Step 4. User specific code:
 //
 
    FM25H20_init();
-   sciConfig.baudrate = B115200;
+   sciConfig.baudrate = B460800;
    sciConfig.dataSize = BIT_8;
    sciConfig.stopBit = STOP_BIT_1;
    sciConfig.parity = PARITY_NONE;
-   if (Sci_Init(SCIA, &sciConfig) != SCI_SUCCESS)
+   sciConfig.cbReception = &rxcall;
+
+   if (Sci_Init(SCI_A, &sciConfig) != SCI_SUCCESS)
    {
        while(1);
    }
@@ -164,6 +173,7 @@ void main(void)
         DELAY_US(500000);
         //        FM25H20_memWrite(0,  m_testDataTX,  6);
 //        FM25H20_memRead(0,  m_testDataRX,  6);
+//        Sci_Write(SCIA, "Bonjour\n", sizeof("Bonjour\n"));
     }
 
 }
