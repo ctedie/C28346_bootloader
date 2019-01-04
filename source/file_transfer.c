@@ -26,10 +26,13 @@
 /* Includes --------------------------------------------------------------------------------------------------------*/
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
+#include "sci.h"
 #include "frame.h"
 
 /* Macro definition ------------------------------------------------------------------------------------------------*/
+#define MAX_DATA_SIZE   256
 
 /* Constant definition ---------------------------------------------------------------------------------------------*/
 /* Type definition  ------------------------------------------------------------------------------------------------*/
@@ -42,9 +45,69 @@ typedef struct
 }data_t;
 
 /* Public variables ------------------------------------------------------------------------------------------------*/
+
 /* Private variables -----------------------------------------------------------------------------------------------*/
+static uint16_t m_FrameChannelNumber = 0xAA;
+static uint16_t m_dataNotify = 0x0CED;
+static data_t m_data;
 /* Private functions prototypes ------------------------------------------------------------------------------------*/
+static uint16_t* allocMsg(void);
+void freeMsg(void* pMsg);
+static void msgReceived(void *pData, void *pMsg, uint16_t size);
+
 /* Private functions -----------------------------------------------------------------------------------------------*/
+
+/**
+ *********************************************************
+ * \brief
+ *
+ * \param [in]
+ * \param [out]
+ *
+ * \return
+ *********************************************************/
+static uint16_t* allocMsg(void)
+{
+    uint16_t* msg;
+
+    msg = (uint16_t*)malloc(MAX_DATA_SIZE);
+    return msg;
+}
+
+/**
+ *********************************************************
+ * \brief
+ *
+ * \param [in]
+ * \param [out]
+ *
+ * \return
+ *********************************************************/
+void freeMsg(void* pMsg)
+{
+    free(pMsg);
+}
+
+/**
+ *********************************************************
+ * \brief
+ *
+ * \param [in]
+ * \param [out]
+ *
+ * \return
+ *********************************************************/
+static void msgReceived(void *pData, void *pMsg, uint16_t size)
+{
+    data_t *pMsgData = (data_t*)pMsg;
+
+    m_data.blockNb = pMsgData->blockNb;
+    m_data.blockTotal = pMsgData->blockTotal;
+    m_data.size = pMsgData->size;
+
+    m_data.pData = (pMsg+5);
+}
+
 /* Public functions ------------------------------------------------------------------------------------------------*/
 
 /**
@@ -56,7 +119,16 @@ typedef struct
  *
  * \return
  *********************************************************/
+int16_t FileTransfer_init(void)
+{
+    m_FrameChannelNumber = FrameInit(SCI_A, B460800, BIT_8, PARITY_NONE, STOP_BIT_1, msgReceived, &m_dataNotify, allocMsg, freeMsg);
+    if (m_FrameChannelNumber == 0xFF)
+    {
+        return -1;
+    }
 
+    return 0;
+}
 
 /** \} */
 /******************************************************** EOF *******************************************************/

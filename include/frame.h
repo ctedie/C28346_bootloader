@@ -40,7 +40,7 @@ extern "C"
 /* Public Macro definition -----------------------------------------------------------------------------------------*/
 /* Public Constant definition --------------------------------------------------------------------------------------*/
 /* Public Type definition  -----------------------------------------------------------------------------------------*/
-typedef void (*cbNotifyRx_t)(void *pData, uint16_t *pMsg, uint16_t size);
+typedef void (*cbNotifyRx_t)(void *pData, void *pMsg, uint16_t size);
 typedef uint16_t* (*cbAllocMsg_t)(void);
 typedef void (*cbFreeMsg_t)(void* pMsg);
 
