@@ -171,7 +171,7 @@ static void generalRxIntHandler(uint16_t uartNb)
 {
     uint16_t car = 0;
 
-    if(m_sciList[uartNb].sciReg->SCIFFRX.bit.RXFFST > 0)
+    while(m_sciList[uartNb].sciReg->SCIFFRX.bit.RXFFST > 0)
     {
         car = m_sciList[uartNb].sciReg->SCIRXBUF.bit.RXDT;
         if(m_sciList[uartNb].cbReception != NULL)
