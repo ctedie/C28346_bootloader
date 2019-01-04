@@ -46,7 +46,7 @@ typedef void (*cbFreeMsg_t)(void* pMsg);
 
 /* Public variables ------------------------------------------------------------------------------------------------*/
 /* Public functions ------------------------------------------------------------------------------------------------*/
-uint16_t SerialLinkFrameProtocoleInit(SciNumber_t link,
+uint16_t FrameInit(SciNumber_t link,
                                    SciSpeed_t baurate,
                                    SciDataSize_t bitSize,
                                    SciParity_t parity,
@@ -57,7 +57,7 @@ uint16_t SerialLinkFrameProtocoleInit(SciNumber_t link,
                                    cbFreeMsg_t cbFreeMsg
                                    );
 
-void SerialLinkFrameProtocole_Send(uint16_t channel, uint16_t *pMsg, uint16_t size);
+void Frame_Send(uint16_t channel, uint16_t *pMsg, uint16_t size);
 
 #endif /* FRAME_H_ */
 

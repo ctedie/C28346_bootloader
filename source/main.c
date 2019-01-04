@@ -22,13 +22,15 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 #include "DSP2834x_Device.h"
 #include "DSP28x_Project.h"
 
 #include "main.h"
 #include "FM25H20.h"
-#include "sci.h"
+//#include "sci.h"
+#include "frame.h"
 
 /* Macro definition ------------------------------------------------------------------------------------------------*/
 #define GPIO_OUTPUT     1
@@ -54,7 +56,7 @@
 /* Public variables ------------------------------------------------------------------------------------------------*/
 /* Private variables -----------------------------------------------------------------------------------------------*/
 static uint16_t m_data = 0;
-
+static uint16_t m_FrameChannelNumber = 0xAA;
 /* Private functions prototypes ------------------------------------------------------------------------------------*/
 /* Private functions -----------------------------------------------------------------------------------------------*/
 static void LED_Config(void);
@@ -80,12 +82,26 @@ static void LED_Config(void)
 
 static uint16_t m_testDataTX[6] = {1, 2, 3, 4, 5, 6};
 static uint16_t m_testDataRX[6];
-static void rxcall(void *pData, uint16_t caracter);
+static void rxcall(void *pData, uint16_t *pMsg, uint16_t size);
 
-static uint16_t m_caracter;
-static void rxcall(void *pData, uint16_t caracter)
+
+static uint16_t* alloc(void)
 {
-    m_caracter = caracter;
+    uint16_t* msg;
+
+    msg = (uint16_t*)malloc(50);
+    return msg;
+}
+
+void liberer(void* pMsg)
+{
+    free(pMsg);
+}
+
+static uint16_t m_dataNotify = 0x0CED;
+static void rxcall(void *pData, uint16_t *pMsg, uint16_t size)
+{
+
 }
 /**
  *********************************************************
@@ -98,7 +114,6 @@ static void rxcall(void *pData, uint16_t caracter)
  *********************************************************/
 void main(void)
 {
-    SciConfig_t sciConfig;
 //
 // Step 1. Initialize System Control:
 // PLL, WatchDog, enable Peripheral Clocks
@@ -152,13 +167,15 @@ void main(void)
 //
 
    FM25H20_init();
-   sciConfig.baudrate = B460800;
-   sciConfig.dataSize = BIT_8;
-   sciConfig.stopBit = STOP_BIT_1;
-   sciConfig.parity = PARITY_NONE;
-   sciConfig.cbReception = &rxcall;
 
-   if (Sci_Init(SCI_A, &sciConfig) != SCI_SUCCESS)
+//   sciConfig.baudrate = B460800;
+//   sciConfig.dataSize = BIT_8;
+//   sciConfig.stopBit = STOP_BIT_1;
+//   sciConfig.parity = PARITY_NONE;
+//   sciConfig.cbReception = &rxcall;
+
+   m_FrameChannelNumber = FrameInit(SCI_A, B460800, BIT_8, PARITY_NONE, STOP_BIT_1, rxcall, &m_dataNotify, alloc, liberer);
+   if (m_FrameChannelNumber == 0xFF)
    {
        while(1);
    }

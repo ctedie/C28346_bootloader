@@ -78,7 +78,10 @@ typedef struct
 
 /* Public variables ------------------------------------------------------------------------------------------------*/
 /* Private variables -----------------------------------------------------------------------------------------------*/
-channel_t m_channels[MAX_CHANNELS_NUMBER];
+channel_t m_channels[MAX_CHANNELS_NUMBER] =
+        {
+         {.isOpen = false}
+        };
 
 /* Private functions prototypes ------------------------------------------------------------------------------------*/
 static void charReceived(void *pDataRx, uint16_t car);
@@ -111,7 +114,7 @@ static bool buildmessage(void *pData, uint16_t *pMsg, uint16_t maxSize);
  *
  * \return
  *********************************************************/
-uint16_t SerialLinkFrameProtocoleInit(SciNumber_t link,
+uint16_t FrameInit(SciNumber_t link,
                                     SciSpeed_t baurate,
                                     SciDataSize_t bitSize,
                                     SciParity_t parity,
@@ -154,6 +157,7 @@ uint16_t SerialLinkFrameProtocoleInit(SciNumber_t link,
     pChannel->rxMsg.cbFreeMsg = cbFreeMsg;
     pChannel->rxMsg.cbNotifyRx = cbNotifyRx;
     pChannel->rxMsg.pDataNotifyRX = pDataNotifyRx;
+    pChannel->rxMsg.pMsg = NULL;
 
 //  pChannel
     linkConf.baudrate = baurate;
@@ -184,7 +188,7 @@ uint16_t SerialLinkFrameProtocoleInit(SciNumber_t link,
  *
  * \return
  *********************************************************/
-void SerialLinkFrameProtocole_Send(uint16_t channel, uint16_t *pMsg, uint16_t size)
+void Frame_Send(uint16_t channel, uint16_t *pMsg, uint16_t size)
 {
     channel_t *pChannel = &m_channels[channel];
 
